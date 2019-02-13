@@ -1,4 +1,4 @@
-package spring;
+package zj.spring;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

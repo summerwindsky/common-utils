@@ -1,4 +1,4 @@
-package http;
+package zj.http;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;

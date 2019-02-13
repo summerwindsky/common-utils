@@ -1,4 +1,4 @@
-package file;
+package zj.file;
 
 import javax.swing.filechooser.FileFilter;
 import java.io.*;
