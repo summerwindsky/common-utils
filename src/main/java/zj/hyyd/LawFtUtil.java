@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 /**
  * Title:  LawUtil
  * Description: TODO
- * Company: 北京华宇元典信息服务有限公司
  *
  * @author ljp
  * @version 1.0

@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 /**
  * @Title:
  * @Description:
- * @Company: 北京紫光华宇软件股份有限公司
  * @author zhaoh
  * @date 2014-11-13
  * @version V1.0

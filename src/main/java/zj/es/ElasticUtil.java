@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Title: ElasticUtil
  * Description:
- * Company: 北京华宇元典信息服务有限公司
  *
  * @author tianxiupeng
  * @version 1.0

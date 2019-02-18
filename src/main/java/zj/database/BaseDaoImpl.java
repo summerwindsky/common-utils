@@ -17,7 +17,6 @@ import java.util.List;
  * 
  * Title: BaseDaoImpl
  * Description: 数据库信息维护基础操作
- * Company: 北京华宇元典信息服务有限公司
  *
 * @author tianxiupeng
  * @version 1.0

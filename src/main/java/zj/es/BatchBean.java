@@ -3,7 +3,6 @@ package zj.es;
 /**
  * Title: BatchBean
  * Description: 
- * Company: 北京华宇元典信息服务有限公司
  *
  * @author lyf
  * @version 1.0

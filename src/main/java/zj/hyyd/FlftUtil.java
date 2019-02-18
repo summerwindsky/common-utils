@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
  * 
  * @author gaojun
  * @date 2014-12-26 下午6:08:30
- * @Company 北京华宇信息技术有限公司
  */
 
 public class FlftUtil {

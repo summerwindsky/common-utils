@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
  * 
  * @author gaojun
  * @date 2014-12-26 下午6:40:31
- * @Company 北京华宇信息技术有限公司
  */
 
 public class RegexUtil {

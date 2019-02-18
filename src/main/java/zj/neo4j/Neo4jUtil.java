@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Title: DealWritRelationHandler
  * Description:
- * Company: 北京华宇元典信息服务有限公司
  *
  * @author tianxiupeng
  * @version 1.0
