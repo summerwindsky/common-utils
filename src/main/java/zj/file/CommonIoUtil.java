@@ -41,4 +41,13 @@ public class CommonIoUtil {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 统计文本中的 不重复的文本数
+     * @param path
+     */
+    public static void countRecord(String path) {
+        String filePath = Thread.currentThread().getContextClassLoader().getResource("").getPath() + path;
+
+    }
 }

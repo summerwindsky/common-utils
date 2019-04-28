@@ -1,0 +1,1 @@
+2018-08-31 15:40:37,193 [com.thunisoft.icase.entry.manager.CaseProduceManager:119]-[INFO] pool-数据处理控制-thread-1 -------------------------遍历案号案件标识表sql:select "ajbs","option" from  "hyyd_ajbsbg_0826
