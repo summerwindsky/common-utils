@@ -1,0 +1,2 @@
+在master1上安装
+从是h2slave1,h2slave2,h2slave3
