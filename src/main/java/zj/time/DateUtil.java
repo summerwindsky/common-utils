@@ -1,5 +1,6 @@
 package zj.time;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class DateUtil {
 
@@ -132,6 +134,48 @@ public class DateUtil {
             }
         }
         return String.valueOf(term);
+    }
+
+    /**
+     * 最大
+     * @param dateList
+     * @return
+     */
+    public static Date max(List<Date> dateList) {
+        Date maxDate = null;
+        if (CollectionUtils.isNotEmpty(dateList)) {
+            for (Date date : dateList) {
+                if (maxDate == null) {
+                    maxDate = date;
+                    continue;
+                }
+                if (maxDate.before(date)) {
+                    maxDate = date;
+                }
+            }
+        }
+        return maxDate;
+    }
+
+    /**
+     * 最小
+     * @param dateList
+     * @return
+     */
+    public static Date min(List<Date> dateList) {
+        Date minDate = null;
+        if (CollectionUtils.isNotEmpty(dateList)) {
+            for (Date date : dateList) {
+                if (minDate == null) {
+                    minDate = date;
+                    continue;
+                }
+                if (minDate.after(date)) {
+                    minDate = date;
+                }
+            }
+        }
+        return minDate;
     }
 
 

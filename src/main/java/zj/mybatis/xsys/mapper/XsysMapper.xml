@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.thunisoft.sync.aj.xsys.mapper.XsysMapper">
+
+     <sql id="column_List">      aj.c_bh as bh, aj.c_ajmc as ajmc, aj.n_ajjzjd as ajjzjd, aj.n_sycx as sycx, aj.n_sfktsl as sfktsl, to_char(aj.dt_zhgxsj, 'yyyy-mm-dd') as zhgxsj, to_char(aj.dt_sasj, 'yyyy-mm-dd') as sasj,
+        aj.n_ajbs AS ajbs, CAST (aj.n_bh_jbfy AS VARCHAR) AS jbfy,
+        EXTRACT (YEAR FROM aj.dt_sasj) AS lanf, EXTRACT (YEAR FROM aj.dt_jasj) AS janf,
+        CAST (aj.n_ajbs AS VARCHAR) AS najbs, aj.C_AH AS ah,
+        COALESCE (aj.n_bh_cbr, 0) AS cbr, aj.dt_sasj + '8H' AS larq,
+        aj.dt_jasj + '8H' AS jarq, CAST (aj.N_LAAY AS VARCHAR) AS laay,
+        CAST (aj.N_JAAY AS VARCHAR) AS jaay, CAST (aj.N_JAFS AS VARCHAR) AS jafs,
+         '刑事' AS ajlb, '1' AS ajlbdm, '刑事一审' AS ajspcx, 1 AS spcx
+    </sql>
+
+    <sql id="select_between">
+        <trim prefix="WHERE" prefixOverrides="AND |OR ">
+            <if test="start != null">${table}.n_ajbs &gt;= #{start}</if>
+            <if test="end != null">AND ${table}.n_ajbs &lt; #{end}</if>
+        </trim>
+    </sql>
+
+    <!-- 查询案件列表 -->
+    <select id="selectFullSync"
+            resultType="com.thunisoft.sync.model.Aj">
+        SELECT
+        <include refid="column_List"/>
+        /*FROM DB_SPYW.t_aj aj *//*inner join db_jcxx.t_fy fy on (aj.n_bh_jbfy = fy.n_fy) where fy.c_fjm like '1%'*//* *//*and aj.dt_zhgxsj >= to_char(now() , 'yyyy-MM-dd 00:00:00')::TIMESTAMP + '-3 day'*//*   and aj.n_ajzlb = 20100*/
+        FROM DB_SPYW.t_aj aj where aj.n_ajzlb = 20100
+    </select>
+
+
+    <!-- 增量更新-修改 案件列表 -->
+    <select id="selectUpdate" resultType="com.thunisoft.sync.model.Aj">
+        SELECT
+        <include refid="column_List"/>
+        FROM DB_XSYS.T_XSYS aj
+        WHERE
+        EXISTS(
+        SELECT n_ajbs
+        FROM (SELECT n_ajbs, n_zt, cast(d_updatetime as VARCHAR) as updatetime FROM DB_XSYS.T_XSYSZLJL ) a
+        WHERE updatetime >= cast( (now()-INTERVAL '2 day') as VARCHAR) AND a.n_bh_jbfy =aj.n_bh_jbfy and a.c_ah =aj.c_ah AND a.n_zt=1
+        ) AND aj.C_BAAH IS NOT NULL ORDER BY aj.n_ajbs ASC
+    </select>
+
+    <!-- 增量更新-删除 案件列表 -->
+    <!--  SELECT
+        <include refid="column_List"/>
+        FROM DB_XSYS.T_XSYS aj
+        WHERE
+        EXISTS(
+        SELECT n_ajbs
+        FROM (SELECT n_ajbs, n_zt, cast(d_updatetime as VARCHAR) as updatetime FROM DB_XSYS.T_XSYSZLJL ) a
+        WHERE updatetime >= cast( (now()-INTERVAL '2 day') as VARCHAR) AND a.n_bh_jbfy =aj.n_bh_jbfy and a.c_ah =aj.c_ah AND a.n_zt=2
+        ) AND aj.C_BAAH IS NOT NULL ORDER BY aj.n_ajbs ASC -->
+    <select id="selectDelete" resultType="com.thunisoft.sync.model.Aj">
+        select aj.c_ah AS ah,aj.n_bh_jbfy as jbfy,'999' AS jbfy, 2000 AS lanf, 2000 AS janf,
+        '999' najbs, '999' ah,
+        0 AS cbr, now() AS larq, now() jarq,
+        '999' AS laay, '999' AS jaay,
+        '999' AS jafs, '民事' AS ajlb, '2' AS ajlbdm, '二审' AS ajspcx, 2 AS spcx   
+        from DB_XSYS.T_XSYSZLJL aj 
+        where n_zt = 2 and cast(d_updatetime as VARCHAR) >= cast( (now()-INTERVAL '2 day') as VARCHAR)
+        order by aj.n_ajbs asc
+    </select>
+
+    <!-- 承办人 -->
+    <select id="transCbr" resultType="com.thunisoft.sync.model.KeyValue" parameterType="com.thunisoft.sync.aj.Between">
+        SELECT aj.N_AJBS||'-'||spzz.N_BH_RY AS key, spzz.c_mc AS value
+        FROM DB_SPYW.T_AJ_SPZZCY spzz inner join DB_SPYW.t_aj aj on ( aj.c_bh = spzz.c_bh_aj and aj.n_bh_cbr = spzz.N_BH_RY) /*inner join db_jcxx.t_fy fy on (aj.n_bh_jbfy = fy.n_fy)*/
+        <include refid="select_between">
+            <property name="table" value="aj"/>
+        </include>
+        /*and  fy.c_fjm like '1%'*/ /*and aj.dt_zhgxsj >= to_char(now() , 'yyyy-MM-dd 00:00:00')::TIMESTAMP + '-3 day'*/   and aj.n_ajzlb = 20100
+    </select>
+
+    <!-- 审判组织 -->
+    <select id="transSpzz" resultType="com.thunisoft.sync.model.KeyValue" parameterType="com.thunisoft.sync.aj.Between">
+        SELECT aj.N_AJBS AS key, spzz.N_BH_RY AS value
+        FROM DB_SPYW.t_aj aj inner join DB_SPYW.T_AJ_SPZZCY spzz on (aj.C_BH = spzz.C_BH_AJ) /*inner join db_jcxx.t_fy fy on (aj.n_bh_jbfy = fy.n_fy)*/
+        <include refid="select_between">
+            <property name="table" value="aj"/>
+        </include>
+        /*and  fy.c_fjm like '1%'*/ /*and aj.dt_zhgxsj >= to_char(now() , 'yyyy-MM-dd 00:00:00')::TIMESTAMP + '-3 day'*/   and aj.n_ajzlb = 20100
+    </select>
+
+    <!-- 被告人 -->
+    <select id="transBgr" resultType="com.thunisoft.sync.model.KeyValue" parameterType="com.thunisoft.sync.aj.Between">
+        SELECT aj.n_ajbs AS key, dsr.N_XH AS value
+        FROM DB_SPYW.t_aj aj inner join DB_SPYW.T_AJ_DSR dsr on(aj.c_bh = dsr.c_bh_aj) /*inner join db_jcxx.t_fy fy on (aj.n_bh_jbfy = fy.n_fy)*/
+        <!-- SELECT aj.N_AJBS AS key, bgr.C_BH_DSR AS value
+        FROM db_spyw.t_aj aj inner join DB_SPYW.T_XS_DSRPJXX bgr  on (aj.c_bh = bgr.c_bh_aj) -->
+        <include refid="select_between">
+            <property name="table" value="aj"/>
+        </include>
+        /*and  fy.c_fjm like '1%'*/ /*and aj.dt_zhgxsj >= to_char(now() , 'yyyy-MM-dd 00:00:00')::TIMESTAMP + '-3 day'*/   and aj.n_ajzlb = 20100
+    </select>
+
+    <!-- 被害人 -->
+    <select id="transBhr" resultType="com.thunisoft.sync.model.KeyValue" parameterType="com.thunisoft.sync.aj.Between">
+        SELECT aj.N_AJBS AS key, bgr.C_BH_DSR AS value
+        FROM db_spyw.t_aj aj inner join DB_SPYW.T_XS_DSRPJXX bgr  on (aj.c_bh = bgr.c_bh_aj)  inner join db_jcxx.t_fy fy on (aj.n_bh_jbfy = fy.n_fy)
+        <include refid="select_between">
+            <property name="table" value="aj"/>
+        </include>
+        /*and  fy.c_fjm like '1%'*/ /*and aj.dt_zhgxsj >= to_char(now() , 'yyyy-MM-dd 00:00:00')::TIMESTAMP + '-3 day'*/   and aj.n_ajzlb = 20100
+    </select>
+
+    <!-- 自诉人-->
+    <select id="transZsr" resultType="com.thunisoft.sync.model.KeyValue" parameterType="com.thunisoft.sync.aj.Between">
+        SELECT aj.N_AJBS AS key, bgr.C_BH_DSR AS value
+        FROM db_spyw.t_aj aj inner join DB_SPYW.T_XS_DSRPJXX bgr  on (aj.c_bh = bgr.c_bh_aj) /*inner join db_jcxx.t_fy fy on (aj.n_bh_jbfy = fy.n_fy)*/
+        <include refid="select_between">
+            <property name="table" value="aj"/>
+        </include>
+        /*and  fy.c_fjm like '1%'*/ /*and aj.dt_zhgxsj >= to_char(now() , 'yyyy-MM-dd 00:00:00')::TIMESTAMP + '-3 day'*/   and aj.n_ajzlb = 20100
+    </select>
+
+    <!-- 文书路径 -->
+    <select id="transWslj" resultType="com.thunisoft.sync.model.KeyValue" parameterType="com.thunisoft.sync.aj.Between">
+        SELECT aj.N_AJBS AS key, ws.C_HTM_PROTOCOL AS value
+        FROM DB_SPYW.T_AJ aj inner join DB_SPYW.T_WS ws on (aj.c_bh = ws.c_bh_aj) /*inner join db_jcxx.t_fy fy on (aj.n_bh_jbfy = fy.n_fy)*/
+        <include refid="select_between">
+            <property name="table" value="aj"/>
+        </include>
+        /*and  fy.c_fjm like '1%'*/ /*and aj.dt_zhgxsj >= to_char(now() , 'yyyy-MM-dd 00:00:00')::TIMESTAMP + '-3 day'*/   and aj.n_ajzlb = 20100
+    </select>
+
+    <!-- 文书搜索 -->
+    <select id="selectWrit" resultType="com.thunisoft.sync.model.Writ" parameterType="com.thunisoft.sync.aj.Between">
+        SELECT aj.N_AJBS AS ajbs, ws.C_DOC_PROTOCOL AS wsljdoc, ws.C_HTM_PROTOCOL AS wsljhtml, ws.n_wslx AS wslx, ws.dt_zhgxsj AS zhgxsj, ws.c_bh AS bh, ws.c_bh_aj AS bh_aj, ws.c_wsmc AS wsmc
+        FROM DB_SPYW.T_AJ aj inner join DB_SPYW.T_WS ws on (aj.c_bh = ws.c_bh_aj) /*inner join db_jcxx.t_fy fy on (aj.n_bh_jbfy = fy.n_fy)*/
+        <include refid="select_between">
+            <property name="table" value="aj"/>
+        </include>
+        /*and  fy.c_fjm like '1%'*/ /*and aj.dt_zhgxsj >= to_char(now() , 'yyyy-MM-dd 00:00:00')::TIMESTAMP + '-3 day'*/    and aj.n_ajzlb = 20100
+    </select>
+
+    <!-- 与案实体名录 -->
+    <select id="transYastml" resultType="com.thunisoft.sync.model.Yastml" parameterType="com.thunisoft.sync.aj.Between">
+        SELECT aj.n_ajbs AS ajbs,
+                coalesce(stml.n_xh,0) AS xh,
+                NULL AS ly,
+                NULL AS bs,
+                null AS js,
+                n_lx AS lx,
+                stml.C_MC AS mc,
+                n_xb AS xb,
+                d_csrq AS csrq,
+                N_NL AS nl,
+                N_GJ AS gj,
+                n_mz AS mz,
+                n_sf AS sf,
+                C_ZJHM AS sfzhm,
+                C_XZZ AS dz,
+                C_GZDWMC AS szdw,
+                n_zzmm AS zzmm,
+                n_whcd AS whcd,
+                n_ldry AS ldry,
+                c_zw AS zw,
+                null AS zzjgdm,
+                CAST (N_HJSZD AS VARCHAR) AS hjszd,
+                NULL AS lxdh,
+                NULL AS yzbm,
+                NULL AS dzyx,
+                NULL AS zy,
+                n_hyzk AS hyzk,
+                C_QTSFZJMC AS qtzjzl,
+                C_ZJHM AS qtzjhm,
+                null AS jggbjb,
+                null AS xyjrsf,
+                NULL AS xzjb,
+                C_TSSLHBL AS tsslhbl,
+                NULL AS jtjjzk,
+                null AS wcnrjtbj,
+                NULL AS jl,
+                N_ZCDGJDQ AS gjdq,
+                N_GZDWLX AS dwxz,
+                N_JGLX AS tshy,
+                c_fddbr AS fddbr,
+                NULL AS dbrzjzl,
+                NULL AS dbrzjhm,
+                NULL AS qtlxff
+        FROM DB_SPYW.t_aj aj inner join DB_SPYW.T_AJ_DSR stml on (aj.c_bh = stml.c_bh_aj) /*inner join db_jcxx.t_fy fy on (aj.n_bh_jbfy = fy.n_fy)*/
+        <include refid="select_between">
+            <property name="table" value="aj"/>
+        </include>
+        /*and  fy.c_fjm like '1%'*/ /*and aj.dt_zhgxsj >= to_char(now() , 'yyyy-MM-dd 00:00:00')::TIMESTAMP + '-3 day'*/   and aj.n_ajzlb = 20100
+    </select>
+
+</mapper>

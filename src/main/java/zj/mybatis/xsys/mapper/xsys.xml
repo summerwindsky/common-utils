@@ -1,0 +1,99 @@
+<!--XSYS-->
+<entity name="aj" onError="skip" dataSource="ds_jdbc" pk="n_ajbs"
+        query="SELECT aj.n_ajbs as ajbs, cast(aj.n_bh_jbfy as varchar) as JBFY, extract(year from aj.D_SARQ) AS lanf, extract(year from aj.D_JARQ) AS janf,  cast(aj.n_ajbs as varchar) as n_ajbs, aj.C_BAAH AS AH, COALESCE(aj.N_CBRBS,0) as cbr, 1 AS SPCX, aj.D_SARQ+'8H' as LARQ, aj.D_JARQ+'8H' as JARQ, cast(aj.N_QSZZM as varchar) AS LAAY, cast(aj.N_AY as varchar) AS JAAY, cast(aj.N_JAFS as varchar) AS JAFS
+      FROM DB_XSYS.T_XSYS aj "
+
+        deltaImportQuery="SELECT aj.n_ajbs as ajbs, cast(aj.n_bh_jbfy as varchar) as JBFY, extract(year from aj.D_SARQ) AS lanf, extract(year from aj.D_JARQ) AS janf,  cast(aj.n_ajbs as varchar) as n_ajbs, aj.C_BAAH AS AH, COALESCE(aj.N_CBRBS,0) as cbr, 1 AS SPCX, aj.D_SARQ+'8H' as LARQ, aj.D_JARQ+'8H' as JARQ, cast(aj.N_QSZZM as varchar) AS LAAY, cast(aj.N_AY as varchar) AS JAAY, cast(aj.N_JAFS as varchar) AS JAFS
+      FROM DB_XSYS.T_XSYS aj
+      WHERE EXISTS(SELECT n_ajbs from ( SELECT n_ajbs, n_zt, cast(d_updatetime as VARCHAR) as updatetime FROM DB_XSYS.T_XSYSZLJL ) a WHERE updatetime &gt;= cast( (now()-INTERVAL '2 day') as VARCHAR) AND a.n_bh_jbfy =aj.n_bh_jbfy and a.c_ah =aj.c_ah AND a.n_zt=1) AND aj.C_BAAH IS NOT NULL"
+
+        deltaQuery="select count(n_ajbs) as n_ajbs from DB_XSYS.T_XSYS aj WHERE EXISTS(SELECT n_ajbs from ( SELECT n_ajbs, n_zt, cast(d_updatetime as VARCHAR) as updatetime FROM DB_XSYS.T_XSYSZLJL ) a WHERE updatetime &gt;= cast( (now()-INTERVAL '2 day') as VARCHAR) AND a.n_bh_jbfy =aj.n_bh_jbfy and a.c_ah =aj.c_ah)  "
+
+        deletedPkQuery="SELECT aj.n_ajbs as ajbs, cast(aj.n_bh_jbfy as varchar) as JBFY, extract(year from aj.D_SARQ) AS lanf, extract(year from aj.D_JARQ) AS janf,  cast(aj.n_ajbs as varchar) as n_ajbs, aj.C_BAAH AS AH, COALESCE(aj.N_CBRBS,0) as cbr, 1 AS SPCX, aj.D_SARQ+'8H' as LARQ, aj.D_JARQ+'8H' as JARQ, cast(aj.N_QSZZM as varchar) AS LAAY, cast(aj.N_AY as varchar) AS JAAY, cast(aj.N_JAFS as varchar) AS JAFS
+      FROM DB_XSYS.T_XSYS aj
+      WHERE EXISTS(SELECT n_ajbs from ( SELECT n_ajbs, n_zt, cast(d_updatetime as VARCHAR) as updatetime FROM DB_XSYS.T_XSYSZLJL ) a WHERE updatetime &gt;= cast( (now()-INTERVAL '2 day') as VARCHAR) AND a.n_bh_jbfy =aj.n_bh_jbfy and a.c_ah =aj.c_ah AND a.n_zt=2 ) AND aj.C_BAAH IS NOT NULL"
+
+        transformer="TemplateTransformer">
+    <field column="ajlb" template="刑事"/>
+    <field column="ds" template="ds_jdbc"/>
+    <field column="ajspcx" template="一审"/>
+    <field column="ajlbdm" template="1"/>
+    <field column="n_ajbs" name="_id"/>
+    <field column="spcx" name="spcx"/>
+    <field column="ah" name="ah"/>
+    <field column="cbr" name="cbr"/>
+    <field column="jbfy" name="jbfy"/>
+    <field column="laay" name="laay"/>
+    <field column="jaay" name="jaay"/>
+    <field column="jafs" name="jafs"/>
+    <field column="larq" name="larq"/>
+    <field column="lanf" name="la_year_facet"/>
+    <field column="jarq" name="jarq"/>
+    <field column="janf" name="ja_year_facet"/>
+    <entity name="CBRXM" onError="skip"
+            query="SELECT stml.c_mc FROM DB_XSYS.T_XSYSYASTML stml where stml.N_AJBS=${aj.ajbs} AND stml.N_XH=${aj.cbr}">
+        <field column="c_mc" name="ajcbr"/>
+    </entity>
+    <entity name="JBFYMC" onError="skip"
+            query="SELECT fy.c_mc AS c_mc,cast(fy.n_fy as varchar) as n_fy FROM db_jcxx.t_fy fy "
+            cacheImpl="com.thunisoft.elasticsearch.plugin.river.dih.SortedMapBackedCache"
+            cacheKey="n_fy"
+            cacheLookup="aj.jbfy"
+            where="n_fy=aj.jbfy">
+        <field column="c_mc" name="jbfymc"/>
+    </entity>
+    <entity name="SPZZ" onError="skip"
+            query="SELECT stml.c_mc,cast(spzz.N_AJBS as varchar) as N_AJBS FROM DB_XSYS.T_XSYSYASTML stml,DB_XSYS.T_XSYSSPZZCY spzz where stml.n_xh=spzz.n_xcy and stml.N_AJBS=spzz.N_AJBS and stml.N_AJBS = ${aj.ajbs}">
+        <field column="c_mc" name="spzz"/>
+    </entity>
+    <entity name="AJLAAY" onError="skip"
+            query="SELECT c_mc,cast(n_bh as varchar) AS n_bh FROM db_jcxx.T_AY"
+            cacheImpl="com.thunisoft.elasticsearch.plugin.river.dih.SortedMapBackedCache"
+            cacheKey="n_bh"
+            cacheLookup="aj.laay"
+            where="n_bh=aj.laay">
+        <field column="c_mc" name="ajlaay"/>
+    </entity>
+    <entity name="AJJAAY" onError="skip"
+            query="SELECT c_mc,cast(n_bh as varchar) AS n_bh FROM db_jcxx.T_AY"
+            cacheImpl="com.thunisoft.elasticsearch.plugin.river.dih.SortedMapBackedCache"
+            cacheKey="n_bh"
+            cacheLookup="aj.jaay"
+            where="n_bh=aj.jaay">
+        <field column="c_mc" name="ajjaay"/>
+    </entity>
+    <entity name="AJJAFS" onError="skip"
+            query="SELECT cast(n_dm as varchar) n_dm,c_mc FROM db_jcxx.t_dm  WHERE n_bh_DMLX = 2208 "
+            cacheImpl="com.thunisoft.elasticsearch.plugin.river.dih.SortedMapBackedCache"
+            cacheKey="n_dm"
+            cacheLookup="aj.jafs"
+            where="n_dm=aj.jafs">
+        <field column="c_mc" name="ajjafs"/>
+    </entity>
+    <entity name="WSLJ" onError="skip"
+            query="SELECT ws.c_nr  FROM DB_XSYS.T_XSYSWS ws where ws.N_AJBS= ${aj.ajbs}">
+        <field column="c_nr" name="wslj"/>
+    </entity>
+    <entity name="BGR" onError="skip"
+            query="SELECT stml.c_mc||'!'||COALESCE(stml.c_sfzhm,'') as c_mc FROM DB_XSYS.T_XSYSYASTML stml INNER JOIN DB_XSYS.T_XSYSBGR bgr ON stml.n_ajbs = bgr.n_ajbs AND stml.n_xh = bgr.n_bgr WHERE stml.N_AJBS = ${aj.ajbs}">
+        <field column="c_mc" name="bgr" multiValued="true"/>
+    </entity>
+    <entity name="BHR" onError="skip"
+            query="SELECT stml.c_mc||'!'||COALESCE(stml.c_sfzhm,'') as c_mc FROM DB_XSYS.T_XSYSYASTML stml INNER JOIN DB_XSYS.T_XSYSBHR bhr ON stml.n_ajbs = bhr.n_ajbs AND stml.n_xh = bhr.n_bhr WHERE stml.N_AJBS = ${aj.ajbs}">
+        <field column="c_mc" name="bhr" multiValued="true"/>
+    </entity>
+    <entity name="ZSR" onError="skip"
+            query="SELECT stml.c_mc||'!'||COALESCE(stml.c_sfzhm,'') as c_mc FROM DB_XSYS.T_XSYSYASTML stml INNER JOIN DB_XSYS.T_XSYSZSR zsr ON stml.n_ajbs = zsr.n_ajbs AND stml.n_xh = zsr.n_zsr WHERE stml.N_AJBS = ${aj.ajbs}">
+        <field column="c_mc" name="zsr" multiValued="true"/>
+    </entity>
+    <entity name="QBDSR" onError="skip"
+            query="SELECT stml.c_mc||'!'||COALESCE(stml.c_sfzhm,'') as c_mc FROM DB_XSYS.T_XSYSYASTML stml INNER JOIN DB_XSYS.T_XSYSBGR bgr ON stml.n_ajbs = bgr.n_ajbs AND stml.n_xh = bgr.n_bgr WHERE stml.N_AJBS = ${aj.ajbs} UNION SELECT stml.c_mc||'!'||COALESCE(stml.c_sfzhm,'') as c_mc FROM DB_XSYS.T_XSYSYASTML stml INNER JOIN DB_XSYS.T_XSYSBHR bhr ON stml.n_ajbs = bhr.n_ajbs AND stml.n_xh = bhr.n_bhr WHERE stml.N_AJBS = ${aj.ajbs} UNION SELECT stml.c_mc||'!'||COALESCE(stml.c_sfzhm,'') as c_mc FROM DB_XSYS.T_XSYSYASTML stml INNER JOIN DB_XSYS.T_XSYSZSR zsr ON stml.n_ajbs = zsr.n_ajbs AND stml.n_xh = zsr.n_zsr WHERE stml.N_AJBS = ${aj.ajbs}">
+        <field column="c_mc" name="qbdsr" multiValued="true"/>
+    </entity>
+    <entity name="WSNR" onError="skip"
+            query="SELECT ws.c_nr FROM DB_XSYS.T_XSYSWS ws where ws.N_AJBS= ${aj.ajbs}"
+            transformer="WsnrTransformer">
+        <field column="c_nr" name="wscontent" multiValued="true" hbaseTbaleName="qgwstest" wsType="hbase"
+               wsFolder="F:/WS/1304"/>
+    </entity>
+</entity>
