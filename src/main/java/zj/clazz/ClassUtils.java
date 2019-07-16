@@ -2,6 +2,7 @@ package zj.clazz;
 
 import org.reflections.Reflections;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -31,4 +32,26 @@ public class ClassUtils {
         return returnClassList;
     }
 
+    /**
+     * 获取 Class 中 set方法的 字段名： setFieldName -> FieldName
+     * @param c
+     * @param isCamelCase 是否把首字母转小写
+     * @return
+     */
+    public List<String> getFieldNameByClass(Class c, boolean isCamelCase) {
+        if (c == null) {
+            return null;
+        }
+        List<String> fields = new ArrayList<>();
+        Method[] methods = c.getMethods();
+        for (Method method : methods) {
+            String name = method.getName();
+            if (name.contains("set")) {
+                name = name.substring(name.indexOf("set") + 3);
+                System.out.println(name);
+                fields.add(name);
+            }
+        }
+        return fields;
+    }
 }
