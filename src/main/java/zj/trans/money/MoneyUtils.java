@@ -1,4 +1,4 @@
-package zj.money;
+package zj.trans.money;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;

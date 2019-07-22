@@ -21,7 +21,7 @@ public class LineCounter {
 //        String path = System.getProperty("user.dir");
 //        String path = LineCounter.class.getClassLoader().getResource(projectName).getPath();  // 同下个path
        // path = path.substring("/src");//     /src/main/java
-        String path = "F:\\尚学堂飞秋\\大数据\\day23——hadoop项目、sqoop\\BIG_DATA_SXT3\\src\\com";
+        String path = "";
         System.out.println(path);
         File file = new File(path);
         File files[] = null;

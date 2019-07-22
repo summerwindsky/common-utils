@@ -1,4 +1,4 @@
-package zj.database;
+package zj.database.basedao;
 
 import java.util.List;
 

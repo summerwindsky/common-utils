@@ -1,4 +1,4 @@
-package zj.database;
+package zj.database.basedao;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.jdbc.core.*;

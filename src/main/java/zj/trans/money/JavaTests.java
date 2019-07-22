@@ -1,4 +1,4 @@
-package zj.money;
+package zj.trans.money;
 
 import org.junit.Test;
 
